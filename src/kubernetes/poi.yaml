@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: poi
+  namespace: tripinsights
+spec:
+  selector:
+    matchLabels:
+      app: poi
+  template:
+    metadata:
+      labels:
+        app: poi
+    spec:
+      containers:
+      - name: poi
+        image: registryfqd3481.azurecr.io/tripinsights/poi:1.0
+        env:
+          - name: ASPNETCORE_ENVIRONMENT
+            value: "Local"
+          - name: SQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: dbaccess
+                key: username
+          - name: SQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: dbaccess
+                key: password
+          - name: SQL_SERVER
+            value: sqlserverfqd3481.database.windows.net
+          - name: SQL_DBNAME
+            value: mydrivingDB
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80

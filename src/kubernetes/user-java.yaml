@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-java
+  namespace: tripinsights
+spec:
+  selector:
+    matchLabels:
+      app: user-java
+  template:
+    metadata:
+      labels:
+        app: user-java
+    spec:
+      containers:
+      - name: user-java
+        image: registryfqd3481.azurecr.io/tripinsights/user-java:1.0
+        env:
+          - name: SQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: dbaccess
+                key: username
+          - name: SQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: dbaccess
+                key: password
+          - name: SQL_SERVER
+            value: sqlserverfqd3481.database.windows.net:1433
+          - name: SQL_DBNAME
+            value: mydrivingDB
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80
