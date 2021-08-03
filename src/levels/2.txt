@@ -1,0 +1,26 @@
+docker create network moje
+
+
+docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=Password123" \
+   -p 1433:1433 --name sql1 -h sql1 \
+   --network moje
+   -d mcr.microsoft.com/mssql/server:2019-latest
+
+
+docker exec -it sql1  \
+  /opt/mssql-tools/bin/sqlcmd -S localhost \
+  -U sa -P Password123 -Q 'CREATE DATABASE mydrivingDB' 
+
+
+docker run --network moje -e SQLFQDN=sql1 -e SQLUSER=sa -e SQLPASS=Password123 -e SQLDB=mydrivingDB openhack/data-load:v1
+
+
+docker run -it -p 8080:80 --name poi \
+    --network moje \
+    -e SQL_USER=sa  \
+    -e SQL_PASSWORD=Password123  \
+    -e SQL_SERVER=sql1  \
+    -e SQL_DBNAME=mydrivingDB  \
+    -e ASPNETCORE_ENVIRONMENT=Local \
+    tripinsights/poi:1.0
+

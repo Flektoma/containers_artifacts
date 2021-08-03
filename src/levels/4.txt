@@ -1,0 +1,19 @@
+az ad group create 
+--display-name openHackGroup --mail-nickname "OpenHack Group"   
+
+az aks update -g teamResources -n openhack --enable-aad --aad-admin-group-object-ids b2cd5830-84a3-49d6-b9ab-942d04afbaed --aad-tenant-id 1e66ea18-3eab-4c72-9397-c1fdbdfd0de3
+
+
+
+az aks create  \
+    --resource-group teamResources  \
+    --name openhack-cni     \
+    --node-count 5    \
+    --enable-addons monitoring    \
+    --generate-ssh-keys    \
+    --attach-acr registryfqd3481   \
+    --enable-azure-rbac  \
+    --enable-aad --aad-admin-group-object-ids b2cd5830-84a3-49d6-b9ab-942d04afbaed --aad-tenant-id 1e66ea18-3eab-4c72-9397-c1fdbdfd0de3 \
+    --network-plugin azure  \
+    --vnet-subnet-id /subscriptions/88989695-e8d1-4a2f-84f3-95ae9cae37a4/resourceGroups/teamResources/providers/Microsoft.Network/virtualNetworks/vnet/subnets/aks-subnet  \
+
