@@ -1,0 +1,58 @@
+# User permissions via Azure RBAC
+API_USER=08973fcb-dcdc-4442-9900-6eef1779e858
+WEB_USER=090c504c-aba2-41a7-a42c-ab447f0a77da
+AKS_ID=$(az aks show -g teamResources -n openhack-cni --query id -o tsv)
+
+az role assignment create --role "Azure Kubernetes Service RBAC Reader" --assignee $API_USER --scope $AKS_ID/namespaces/web
+az role assignment create --role "Azure Kubernetes Service RBAC Writer" --assignee $API_USER --scope $AKS_ID/namespaces/tripinsights
+
+
+az role assignment create --role "Azure Kubernetes Service RBAC Reader" --assignee $WEB_USER --scope $AKS_ID/namespaces/tripinsights
+az role assignment create --role "Azure Kubernetes Service RBAC Writer" --assignee $WEB_USER --scope $AKS_ID/namespaces/web
+
+az role assignment create --role "Azure Kubernetes Service Cluster User Role" --assignee $API_USER --scope $AKS_ID
+az role assignment create --role "Azure Kubernetes Service Cluster User Role" --assignee $WEB_USER --scope $AKS_ID
+
+# POD identity
+
+az feature register --name EnablePodIdentityPreview --namespace Microsoft.ContainerService
+az provider register -n Microsoft.ContainerService
+
+# Install the aks-preview extension
+az extension add --name aks-preview
+
+az aks update -g teamResources -n openhack-cni --enable-pod-identity # --network-plugin azure
+
+export IDENTITY_RESOURCE_GROUP="teamResources"
+export IDENTITY_NAME="tripinsights-identity"
+az identity create --resource-group ${IDENTITY_RESOURCE_GROUP} --name ${IDENTITY_NAME}
+export IDENTITY_CLIENT_ID="$(az identity show -g ${IDENTITY_RESOURCE_GROUP} -n ${IDENTITY_NAME} --query clientId -otsv)"
+export IDENTITY_RESOURCE_ID="$(az identity show -g ${IDENTITY_RESOURCE_GROUP} -n ${IDENTITY_NAME} --query id -otsv)"
+
+export NODE_GROUP=$(az aks show -g teamResources -n openhack-cni --query nodeResourceGroup -o tsv)
+NODES_RESOURCE_ID=$(az group show -n $NODE_GROUP -o tsv --query "id")
+az role assignment create --role "Virtual Machine Contributor" --assignee "$IDENTITY_CLIENT_ID" --scope $NODES_RESOURCE_ID
+
+az aks pod-identity add --resource-group teamResources --cluster-name openhack-cni --namespace tripinsights  --name tripinsights-pod-identity --identity-resource-id ${IDENTITY_RESOURCE_ID}
+
+
+
+# Key vault
+az keyvault create --name openhack-vault --resource-group teamResources
+
+az keyvault secret set --vault-name openhack-vault --name SQLPassword --value "zP8tr5Cb8"
+
+az feature register --namespace "Microsoft.ContainerService" --name "AKS-AzureKeyVaultSecretsProvider"
+az provider register -n Microsoft.ContainerService
+
+# Install the aks-preview extension
+az extension add --name aks-preview
+
+# Update the extension to make sure you have the latest version installed
+az extension update --name aks-preview
+
+az aks enable-addons --addons azure-keyvault-secrets-provider --name openhack-cni --resource-group teamResources
+
+
+
+az keyvault set-policy -n openhack-vault --secret-permissions get --spn $IDENTITY_CLIENT_ID

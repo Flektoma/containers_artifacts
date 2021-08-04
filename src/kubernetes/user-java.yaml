@@ -17,15 +17,7 @@ spec:
         image: registryfqd3481.azurecr.io/tripinsights/user-java:1.0
         env:
           - name: SQL_USER
-            valueFrom:
-              secretKeyRef:
-                name: dbaccess
-                key: username
-          - name: SQL_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: dbaccess
-                key: password
+            value: sqladminfQd3481
           - name: SQL_SERVER
             value: sqlserverfqd3481.database.windows.net:1433
           - name: SQL_DBNAME
@@ -39,6 +31,17 @@ spec:
             cpu: "500m"
         ports:
         - containerPort: 80
+        volumeMounts:
+        - name: secrets-store-inline
+          mountPath: "/secrets"
+          readOnly: true
+      volumes:
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "openhack-vault-sqlpass"
 ---
 apiVersion: v1
 kind: Service
