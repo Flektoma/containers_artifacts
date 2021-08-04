@@ -63,6 +63,7 @@ metadata:
     name: poi
   annotations:
     kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/health-probe-path: /api/poi/healthcheck
 spec:
   rules:
   - host: team5.northeurope.cloudapp.azure.com
