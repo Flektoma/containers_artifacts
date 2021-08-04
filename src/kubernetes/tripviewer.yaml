@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tripviewer
-  namespace: tripinsights
+  namespace: web
 spec:
   selector:
     matchLabels:
@@ -17,9 +17,9 @@ spec:
         image: registryfqd3481.azurecr.io/tripinsights/tripviewer:1.1
         env:
           - name: USERPROFILE_API_ENDPOINT
-            value: "http://userprofile:80" #http://userprofile.tripinsights.svc.cluster.local:80
+            value: http://userprofile.tripinsights.svc.cluster.local:80
           - name: TRIPS_API_ENDPOINT
-            value: "http://trips:80" #http://trips.tripinsights.svc.cluster.local:80
+            value: http://trips.tripinsights.svc.cluster.local:80
         resources:
           requests:
             memory: "64Mi"
@@ -29,4 +29,40 @@ spec:
             cpu: "500m"
         ports:
         - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tripviewer
+  namespace: web
+spec:
+  selector:
+    app: tripviewer
+  ports:
+  - port: 80
+    targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tripviewer
+  namespace: web
+  labels:
+    name: tripviewer
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+spec:
+  rules:
+  - host: team5.northeurope.cloudapp.azure.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: tripviewer
+            port: 
+              number: 80
+
+
 

@@ -51,3 +51,32 @@ spec:
   ports:
   - port: 80
     targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: userprofile
+  namespace: tripinsights
+  labels:
+    name: userprofile
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+spec:
+  rules:
+  - host: team5.northeurope.cloudapp.azure.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/api/user"
+        backend:
+          service:
+            name: userprofile
+            port: 
+              number: 80
+      - pathType: Prefix
+        path: "/api/user/*"
+        backend:
+          service:
+            name: userprofile
+            port: 
+              number: 80

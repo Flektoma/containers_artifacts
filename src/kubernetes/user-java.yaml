@@ -39,3 +39,46 @@ spec:
             cpu: "500m"
         ports:
         - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-java
+  namespace: tripinsights
+spec:
+  selector:
+    app: user-java
+  ports:
+  - port: 80
+    targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: user-java
+  namespace: tripinsights
+  labels:
+    name: user-java
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/backend-hostname: user-java
+    appgw.ingress.kubernetes.io/backend-protocol: http
+spec:
+  rules:
+  - host: team5.northeurope.cloudapp.azure.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/api/user-java/healthcheck"
+        backend:
+          service:
+            name: user-java
+            port: 
+              number: 80
+      - pathType: Prefix
+        path: "/api/user-java/*"
+        backend:
+          service:
+            name: user-java
+            port: 
+              number: 80
