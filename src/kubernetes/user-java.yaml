@@ -11,6 +11,7 @@ spec:
     metadata:
       labels:
         app: user-java
+        aadpodidbinding: tripinsights-pod-identity
     spec:
       containers:
       - name: user-java

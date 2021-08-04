@@ -11,6 +11,7 @@ spec:
     metadata:
       labels:
         app: poi
+        aadpodidbinding: tripinsights-pod-identity
     spec:
       containers:
       - name: poi

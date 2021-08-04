@@ -11,6 +11,7 @@ spec:
     metadata:
       labels:
         app: userprofile
+        aadpodidbinding: tripinsights-pod-identity
     spec:
       containers:
       - name: userprofile
