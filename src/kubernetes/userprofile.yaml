@@ -61,7 +61,7 @@ metadata:
     name: userprofile
   annotations:
     kubernetes.io/ingress.class: azure/application-gateway
-    appgw.ingress.kubernetes.io/health-probe-path: /api/userprofile/healthcheck
+    appgw.ingress.kubernetes.io/health-probe-path: /api/user/healthcheck
 spec:
   rules:
   - host: team5.northeurope.cloudapp.azure.com
