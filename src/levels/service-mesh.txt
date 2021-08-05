@@ -28,3 +28,33 @@ http://localhost:8080
 
 # Start enforcing policies
 kubectl patch ConfigMap -n kube-system osm-config --type merge --patch '{"data":{"permissive_traffic_policy_mode":"false"}}'
+
+
+#######
+Another way when Azure preview feature is not working
+
+https://docs.openservicemesh.io/docs/install/
+osm install --set=OpenServiceMesh.enablePermissiveTrafficPolicy=false --mesh-name osm
+
+# Prepare app namespaces and add injection annotation to each of them
+for i in bookstore bookbuyer bookthief bookwarehouse;
+do
+    kubectl create ns $i;
+    osm namespace add $i;
+done
+
+# Deploy all apps
+kubectl apply -f https://raw.githubusercontent.com/openservicemesh/osm/release-v0.8/docs/example/manifests/apps/bookbuyer.yaml
+kubectl apply -f https://raw.githubusercontent.com/openservicemesh/osm/release-v0.8/docs/example/manifests/apps/bookthief.yaml
+kubectl apply -f https://raw.githubusercontent.com/openservicemesh/osm/release-v0.8/docs/example/manifests/apps/bookstore.yaml
+kubectl apply -f https://raw.githubusercontent.com/openservicemesh/osm/release-v0.8/docs/example/manifests/apps/bookwarehouse.yaml
+
+# App should not work now, because we turned off permissive traffic policy on creation
+# But this policy will fix it
+kubectl apply -f smi.yaml
+
+# Lets deploy new version of bookstore
+kubectl apply -f bookstore-v2.yaml
+
+# And send part of the traffic to the new version
+kubectl apply -f traffic-split.yaml
