@@ -11,6 +11,7 @@ spec:
     metadata:
       labels:
         app: tripviewer
+        role: frontend
     spec:
       containers:
       - name: tripviewer

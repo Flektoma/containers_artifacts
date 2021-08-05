@@ -1,0 +1,25 @@
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: backend-policy
+  namespace: tripinsights
+spec:
+  policyTypes:
+  - Egress
+  - Ingress
+  podSelector: {}
+  ingress: 
+  - from:
+    - namespaceSelector: 
+        matchLabels:
+          networkPolicy: "yes"
+      podSelector:
+        matchLabels:
+          role: frontend
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+        except:
+          - 20.191.60.201/32
+          - 10.0.0.1/32

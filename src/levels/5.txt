@@ -25,15 +25,15 @@ az aks update -g teamResources -n openhack-cni --enable-pod-identity # --network
 
 export IDENTITY_RESOURCE_GROUP="teamResources"
 export IDENTITY_NAME="tripinsights-identity"
-az identity create --resource-group ${IDENTITY_RESOURCE_GROUP} --name ${IDENTITY_NAME}
+#az identity create --resource-group ${IDENTITY_RESOURCE_GROUP} --name ${IDENTITY_NAME}
 export IDENTITY_CLIENT_ID="$(az identity show -g ${IDENTITY_RESOURCE_GROUP} -n ${IDENTITY_NAME} --query clientId -otsv)"
 export IDENTITY_RESOURCE_ID="$(az identity show -g ${IDENTITY_RESOURCE_GROUP} -n ${IDENTITY_NAME} --query id -otsv)"
 
-export NODE_GROUP=$(az aks show -g teamResources -n openhack-cni --query nodeResourceGroup -o tsv)
+export NODE_GROUP=$(az aks show -g teamResources -n openhack-np --query nodeResourceGroup -o tsv)
 NODES_RESOURCE_ID=$(az group show -n $NODE_GROUP -o tsv --query "id")
 az role assignment create --role "Virtual Machine Contributor" --assignee "$IDENTITY_CLIENT_ID" --scope $NODES_RESOURCE_ID
 
-az aks pod-identity add --resource-group teamResources --cluster-name openhack-cni --namespace tripinsights  --name tripinsights-pod-identity --identity-resource-id ${IDENTITY_RESOURCE_ID}
+az aks pod-identity add --resource-group teamResources --cluster-name openhack-np --namespace tripinsights  --name tripinsights-pod-identity --identity-resource-id ${IDENTITY_RESOURCE_ID}
 
 
 

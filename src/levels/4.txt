@@ -7,13 +7,17 @@ az aks update -g teamResources -n openhack --enable-aad --aad-admin-group-object
 
 az aks create  \
     --resource-group teamResources  \
-    --name openhack-cni     \
+    --name openhack-np     \
     --node-count 5    \
-    --enable-addons monitoring    \
+    --enable-addons monitoring,ingress-appgw,azure-policy,azure-keyvault-secrets-provider    \
     --generate-ssh-keys    \
     --attach-acr registryfqd3481   \
     --enable-azure-rbac  \
     --enable-aad --aad-admin-group-object-ids b2cd5830-84a3-49d6-b9ab-942d04afbaed --aad-tenant-id 1e66ea18-3eab-4c72-9397-c1fdbdfd0de3 \
     --network-plugin azure  \
+    --network-policy azure \
+    --appgw-id /subscriptions/88989695-e8d1-4a2f-84f3-95ae9cae37a4/resourceGroups/MC_teamResources_openhack-cni_northeurope/providers/Microsoft.Network/applicationGateways/gateway \
+    --enable-pod-identity \
+    --api-server-authorized-ip-ranges  "77.242.86.234/32,88.102.208.149/32,37.77.245.143/32,88.103.230.198/32,69.94.79.225/32,86.49.247.244/32" \
     --vnet-subnet-id /subscriptions/88989695-e8d1-4a2f-84f3-95ae9cae37a4/resourceGroups/teamResources/providers/Microsoft.Network/virtualNetworks/vnet/subnets/aks-subnet  \
 
