@@ -1,0 +1,30 @@
+# Register feature preview
+az feature register --namespace "Microsoft.ContainerService" --name "AKS-OpenServiceMesh"
+az feature list -o table --query "[?contains(name, 'Microsoft.ContainerService/AKS-OpenServiceMesh')].{Name:name,State:properties.state}"
+az provider register --namespace Microsoft.ContainerService
+
+
+# Deploy OSM controller in cluster
+az aks enable-addons --addons open-service-mesh -g teamResources -n openhack-np
+
+# Deploy sample apps
+for i in bookstore bookbuyer bookthief bookwarehouse; do kubectl create ns $i; done
+
+kubectl apply -f https://raw.githubusercontent.com/openservicemesh/osm/release-v0.8/docs/example/manifests/apps/bookbuyer.yaml
+kubectl apply -f https://raw.githubusercontent.com/openservicemesh/osm/release-v0.8/docs/example/manifests/apps/bookthief.yaml
+kubectl apply -f https://raw.githubusercontent.com/openservicemesh/osm/release-v0.8/docs/example/manifests/apps/bookstore.yaml
+kubectl apply -f https://raw.githubusercontent.com/openservicemesh/osm/release-v0.8/docs/example/manifests/apps/bookwarehouse.yaml
+
+
+kubectl get pod -n bookbuyer
+kubectl port-forward bookbuyer-POD-NAME -n bookbuyer 8080:14001
+http://localhost:8080
+
+
+kubectl get pod -n bookthief
+kubectl port-forward bookthief-55b5f8fdcc-6jqh7 -n bookthief 8080:14001
+http://localhost:8080
+
+
+# Start enforcing policies
+kubectl patch ConfigMap -n kube-system osm-config --type merge --patch '{"data":{"permissive_traffic_policy_mode":"false"}}'
